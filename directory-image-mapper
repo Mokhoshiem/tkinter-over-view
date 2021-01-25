@@ -1,0 +1,103 @@
+import tkinter as tk
+from tkinter import filedialog
+from PIL import ImageTk, Image
+import os
+# import turtle
+
+class ImageViewer:
+    
+    def __init__(self, title):
+        self.main = tk.Tk()
+        self.main.title(title)
+        self.main.geometry("1200x900")
+        self.current_image_num = 0
+        self.path = filedialog.askdirectory(initialdir=os.getcwd(), title="Choose Directory to show Images")
+        self.image_list = [os.path.join(self.path, img) for img in os.listdir(self.path)]
+        self.set_widgets()
+        self.main_loop()
+
+    def set_widgets(self):
+        self.image_wrapper = tk.LabelFrame(self.main)
+        self.btn_wrapper = tk.Frame(self.main)
+        self.image_label = tk.Label(self.image_wrapper)
+        self.backward_btn = tk.Button(self.btn_wrapper , text="Previous", command=self.backward)
+        self.exit_btn = tk.Button(self.btn_wrapper , text="Quit", command=self.main.quit)
+        self.forward_btn = tk.Button(self.btn_wrapper , text="Next", command=self.forward)
+        self.show_widgets(self.current_image_num)
+    
+    def show_widgets(self, img_num):
+        try:
+            self.current_image = ImageTk.PhotoImage(Image.open(self.image_list[img_num-1]))
+            self.image_wrapper.pack(side=tk.TOP)
+            self.btn_wrapper.pack(side=tk.BOTTOM, pady=20)
+            self.image_label.configure(image=self.current_image)
+            self.image_label.image = self.current_image
+            self.image_label.pack()
+            self.backward_btn.grid(row=0, column=0, padx=50)
+            self.exit_btn.grid(row=0, column=1, padx=50)
+            self.forward_btn.grid(row=0, column=2, padx=50)
+            self.set_faults()
+        except IndexError:
+            self.run_turtle()
+        
+        
+    def forward(self):
+        if self.current_image_num < len(self.image_list):
+            self.current_image_num += 1
+            self.operation(self.current_image_num-1)
+            self.backward_btn.configure(state='active')
+            self.set_faults()
+        if self.current_image_num == len(self.image_list):
+            self.forward_btn.configure(state='disabled')
+        return self.current_image_num
+
+    def backward(self):
+        self.current_image_num -= 1
+        self.operation(self.current_image_num-1)
+        self.forward_btn.configure(state='active')
+        self.set_faults()
+        if self.current_image_num == 0:
+            self.backward_btn.configure(state='disabled')
+        return self.current_image_num
+
+    def set_faults(self):
+        if self.current_image_num == 0:
+            self.backward_btn.configure(state='disabled')
+        if self.current_image_num == len(self.image_list):
+            self.forward_btn.configure(state='disabled')
+    
+    def operation(self, num):
+        self.image_label.pack_forget()
+        self.current_image = ImageTk.PhotoImage(Image.open(self.image_list[num]))
+        self.image_label.configure(image=self.current_image)
+        self.image_label.image = self.current_image
+        self.image_label.pack()
+
+    def run_turtle(self):
+        self.image_wrapper.pack(side=tk.TOP)
+        self.btn_wrapper.pack(side=tk.BOTTOM, pady=20)
+        self.image_label.configure(text='There is no photos to show')
+        self.image_label.pack()
+        self.image_label.pack()
+        self.backward_btn.grid(row=0, column=0, padx=50)
+        self.exit_btn.grid(row=0, column=1, padx=50)
+        self.forward_btn.grid(row=0, column=2, padx=50)
+        self.set_faults()
+
+    def main_loop(self):
+        self.main.mainloop()
+        
+
+def st_app(root):
+    root.destroy()
+    ImageViewer('Image Viewer')
+    
+
+def start():
+    r_window = tk.Tk()
+    r_window.title('Image Viewer Application')
+    r_window.geometry('400x400')
+    tk.Button(r_window, text='Navigate Photos', command=lambda:st_app(r_window)).pack()
+    r_window.mainloop()
+    
+start()
